@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
 import com.patco.space_api.apicontroller.ApiController;
+import com.patco.space_api.apicontroller.MarsRover;
 
 import io.github.cdimascio.dotenv.Dotenv;
 
@@ -31,11 +32,6 @@ public class RouteController {
         return "Hello world!";
     }
 
-    @RequestMapping("/greeting")
-    public String getSecondGreeting() {
-        return "New York City";
-    }
-
     @RequestMapping("/garbage")
     public ResponseEntity<Resource> getImage() throws Exception {
         Path path = Paths.get("src\\main\\resources\\static\\images\\enceladus.jpg");
@@ -43,7 +39,22 @@ public class RouteController {
         return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(resource);
     }
 
-    @RequestMapping("/resources/nasa")
+    @RequestMapping("/resources/nasa/mars/rover")
+    public String getRoverData() {
+        Dotenv dotenv = Dotenv.load();
+        String key = dotenv.get("NASA_API_KEY");
+        String url = "https://api.nasa.gov/insight_weather/?api_key=" + key + "&feedtype=json&ver=1.0";
+        RestTemplate restTemplate = new RestTemplate();
+        MarsRover marsRoverResponse = restTemplate.getForObject(url, MarsRover.class);
+
+        if (marsRoverResponse == null) {
+            return null;
+        }
+
+        return marsRoverResponse.getSomething();
+    }
+
+    @RequestMapping("/resources/nasa/image")
     public String getNasa() {
         Dotenv dotenv = Dotenv.load();
         String key = dotenv.get("NASA_API_KEY");
@@ -55,17 +66,20 @@ public class RouteController {
             return null;
         }
 
-        System.out.println("My key: " + key);
         return apiResponse.getUrl();
     }
 
     @Controller
     public class WebController {
 
+        @GetMapping("/home")
+        public String getHomePage(Model model) {
+            return "home";
+        }
+
         @GetMapping("/image")
-        public String getPage(Model model) {
+        public String getSpaceImagePage(Model model) {
             String imageUrl = getNasa();
-            System.out.println("Fetched Image URL: " + imageUrl);
             model.addAttribute("imageUrl", imageUrl);
             return "image";
         }
