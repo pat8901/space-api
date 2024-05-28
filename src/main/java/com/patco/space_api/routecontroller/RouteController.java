@@ -58,7 +58,7 @@ public class RouteController {
     public String getNasa() {
         Dotenv dotenv = Dotenv.load();
         String key = dotenv.get("NASA_API_KEY");
-        String url = "https://api.nasa.gov/planetary/apod?api_key=" + key;
+        String url = "https://api.nasa.gov/planetary/apod?date=2023-03-10&api_key=" + key;
         RestTemplate restTemplate = new RestTemplate();
         ApiController apiResponse = restTemplate.getForObject(url, ApiController.class);
 
@@ -74,6 +74,8 @@ public class RouteController {
 
         @GetMapping("/home")
         public String getHomePage(Model model) {
+            String imageUrl = getNasa();
+            model.addAttribute("imageUrl", imageUrl);
             return "home";
         }
 
